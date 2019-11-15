@@ -1,26 +1,30 @@
-#!/usr/bin/env python
+# Name: facebook_birthdays_to_ical.py
+# Authors: Robin & Jamal
+# Date: November 14, 2019
+# Description: Create recurring birthday events from imported facebook html data
+# Note: Facebook data can contain duplicate events. When importing this generated ical
+#       into your calendar, these duplicate events will not be imported
 
+import datetime
 import re
-import csv
-from datetime import date
 
-today = date.today()
+import icalendar
+
+today = datetime.date.today()
+
 data = open('facebook_html.txt', 'r').read()
-
 matched_data = re.findall(r'data-tooltip-content="(?P<name>[a-z0-9 ]+)\((?P<month>\d{1,2})\/(?P<day>\d{1,2})\)"', data, re.IGNORECASE)
 
-with open('birthdays.csv', 'w') as csvfile:
-    headers = ['Subject', 'Start date', 'All Day Event']
-    writer = csv.writer(csvfile, delimiter=',')
+cal = icalendar.Calendar()
+for birthday in matched_data:
+    name, month, day, year = *birthday, today.year
 
-    writer.writerow(headers)
-    for row in matched_data:
-        day = int(row[2])
-        month = int(row[1])
+    event = icalendar.Event()
+    event.add('summary', name)
+    event.add('dtstart', datetime.date(year, int(month), int(day)))
+    event.add('rrule', {'freq': 'yearly'})
+    cal.add_component(event)
 
-        if month <= today.month or (month == today.month and day < today.day):
-            year = today.year + 1
-        else:
-            year = today.year
-
-        writer.writerow([row[0], f"{day}/{month}/{year}", True])
+f = open('birthdays.ics', 'w')
+f.write(cal.to_ical().replace(b'\r\n', b'\n').strip().decode('utf-8'))
+f.close()
