@@ -1,4 +1,4 @@
-Facebook Birthday Export to iCalendar (.ics)
+# Facebook Birthday Export to iCalendar (.ics)
 
 ## Steps
 
